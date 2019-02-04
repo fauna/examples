@@ -1,6 +1,6 @@
-# FaunaDB Demo App
+# FaunaDB CRUD REST Service Example
 
-This is a demo application which showcases how to create a simple CRUD REST service backed by FaunaDB. The examples presented in the [Getting Started](https://app.fauna.com/documentation/gettingstarted) and [CRUD](https://app.fauna.com/documentation/howto/crud) guides have been used as starting point for implementing the service.
+This is an example application which showcases how to create a simple CRUD REST service backed by FaunaDB. The examples presented in the [Getting Started](https://app.fauna.com/documentation/gettingstarted) and [CRUD](https://app.fauna.com/documentation/howto/crud) guides have been used as starting point for its implementation.
 
 __Table of Contents__
 
