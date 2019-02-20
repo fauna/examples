@@ -35,7 +35,6 @@ class Post(Resource):
     curl -XGET 'http://localhost:8080/post/223590710032466432'
     """
     def get(self, post_id):
-        print("single post, get")
         try:
             post_id = post_id.encode('ascii','ignore')
             result = client.query(q.get(q.ref(q.class_("posts"), post_id)))
@@ -158,7 +157,7 @@ class PostList(Resource):
                 json_list.append(json)
                 json = {"posts": json_list}
             else:
-                print(json)
+                app.logger.debug(json)
                 return Response(jsonify('Invalid post information.'), status=422, mimetype='application/json')
 
         for post in json['posts']:
