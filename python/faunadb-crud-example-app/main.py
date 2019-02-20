@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 from flask_restful import reqparse, abort, Api, Resource
 
 app = Flask(__name__)
@@ -40,19 +40,13 @@ class Post(Resource):
             post_id = post_id.encode('ascii','ignore')
             result = client.query(q.get(q.ref(q.class_("posts"), post_id)))
         except fauna_error.NotFound as e:
-            print (e)
-            response = jsonify('Failed to fetch a post.')
-            response.status_code = 404
-            return response
+            app.logger.debug(e)
+            return Response(jsonify('Failed to fetch a post.'), status=404, mimetype='application/json')
         except Exception as e:
-            print (e)
-            response = jsonify('Failed to fetch a post.')
-            response.status_code = 500
-            return response
+            app.logger.debug(e)
+            return Response(jsonify('Failed to fetch a post.'), status=500, mimetype='application/json')
 
-        response = jsonify(to_json(result))
-        response.status_code = 200
-        return response
+        return Response(json.dumps(to_json(result)), status=200, mimetype='application/json')
 
     """
     Delete a post:
@@ -62,15 +56,14 @@ class Post(Resource):
         try:
             post_id = post_id.encode('ascii','ignore')
             result = client.query(q.delete(q.ref(q.class_("posts"), post_id)))
+        except fauna_error.NotFound as e:
+            app.logger.debug(e)
+            return Response(jsonify('Failed to delete a post.'), status=404, mimetype='application/json')
         except Exception as e:
-            print (e)
-            response = jsonify('Failed to delete a post.')
-            response.status_code = 500
-            return response
+            app.logger.debug(e)
+            return Response(jsonify('Failed to delete a post.'), status=500, mimetype='application/json')
 
-        response = jsonify('Post deleted successfully!')
-        response.status_code = 204
-        return response
+        return Response(json.dumps(to_json(result)), status=204, mimetype='application/json')
 
     """
     Update a post:
@@ -80,36 +73,31 @@ class Post(Resource):
     }' 'http://localhost:8080/post/'
     """
     def post(self, post_id = None):
-        json = request.get_json()
+        request_json = request.get_json()
 
         data = {}
         action = "create"
-        status_code = 201
 
-        if "id" in json:
-            data['id'] = json['id']
+        if "id" in request_json:
+            data['id'] = request_json['id']
             action = "update"
-            status_code = 201
-        if "title" in json:
-            data['title'] = json['title']
-        if "tags" in json:
-            data['tags'] = json['tags']
+        if "title" in request_json:
+            data['title'] = request_json['title']
+        if "tags" in request_json:
+            data['tags'] = request_json['tags']
 
         query = q.create(q.class_expr("posts"), data)
 
         try:
             result = client.query(query)
+        except fauna_error.NotFound as e:
+            app.logger.debug(e)
+            return Response(jsonify('Failed to ' + action + ' a post.'), status=404, mimetype='application/json')
         except Exception as e:
             app.logger.debug(e)
-            response = jsonify('Failed to ' + action + ' a post.')
-            response.status_code = 500
-            return response
+            return Response(jsonify('Failed to ' + action + ' a post.'), status=500, mimetype='application/json')
 
-        # to_json makes it a string, rather than a json object, which flask expects
-        response = jsonify(to_json(result))
-        response.status_code=status_code
-        return response
-
+        return Response(json.dumps(to_json(result)), status=201, mimetype='application/json')
 
 """
 Gets a set of posts by the title via the posts_by_title index, or returns all posts if no parameter is 
@@ -130,14 +118,11 @@ class PostList(Resource):
                 posts = client.query(q.map_(lambda x: q.get(x), q.paginate(q.match(q.index("all_posts")))))
 
         except Exception as e:
-            print (e)
-            resp = jsonify('Failed to fetch posts.')
-            resp.status_code = 500
-            return resp
+            app.logger.debug(e)
+            return Response(jsonify('Failed to fetch posts.'), status=500, mimetype='application/json')
 
-        response = jsonify(to_json(posts))
-        response.status_code = 200
-        return response
+        return Response(json.dumps(to_json(result)), status=200, mimetype='application/json')
+
 
     """
     Create a set of posts - title is required, tags are optional.
@@ -174,15 +159,11 @@ class PostList(Resource):
                 json = {"posts": json_list}
             else:
                 print(json)
-                response = jsonify('Invalid post information.')
-                response.status_code = 422
-                return response
+                return Response(jsonify('Invalid post information.'), status=422, mimetype='application/json')
 
         for post in json['posts']:
             if not "title" in post:
-                response = jsonify('Missing title in post.')
-                response.status_code = 422
-                return response
+                return Response(jsonify('Missing title in post.'), status=422, mimetype='application/json')
 
             data.append({"title": post['title'], "tags": post.get('tags', [])})
 
@@ -198,14 +179,10 @@ class PostList(Resource):
             result = client.query(query)
         except Exception as e:
             app.logger.debug(e)
-            response = jsonify('Failed to create post(s).')
-            response.status_code = 500
-            return response
+            return Response(jsonify('Failed to create post(s).'), status=500, mimetype='application/json')
 
-        # to_json makes it a string, rather than a json object, which flask expects
-        response = jsonify(to_json(result))
-        response.status_code=201
-        return response
+        return Response(json.dumps(to_json(result)), status=200, mimetype='application/json')
+
 
 ##
 ## Actually setup the Api resource routing here
