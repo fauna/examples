@@ -2,7 +2,7 @@ package rest
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
-import model.CreateReplacePostData
+import model.{CreateReplacePostData, PaginationOptions}
 import services.PostService
 
 class PostEndpoint(postService: PostService) extends RestEndpoint {
@@ -31,16 +31,20 @@ class PostEndpoint(postService: PostService) extends RestEndpoint {
 
   def retrievePosts: Route =
     (pathEndOrSingleSlash & get) {
-      onSuccess(postService.retrievePosts) { posts =>
-        complete(StatusCodes.OK, posts)
+      parameters('size.as[Int] ?, 'before ?, 'after ?).as(PaginationOptions) { implicit po =>
+        onSuccess(postService.retrievePosts()) { posts =>
+          complete(StatusCodes.OK, posts)
+        }
       }
     }
 
   def retrievePostsByTitle: Route =
     (pathEndOrSingleSlash & get) {
       parameter("title") { title =>
-        onSuccess(postService.retrievePostsByTitle(title)) { posts =>
-          complete(StatusCodes.OK, posts)
+        parameters('size.as[Int] ?, 'before ?, 'after ?).as(PaginationOptions) { implicit po =>
+          onSuccess(postService.retrievePostsByTitle(title)) { posts =>
+            complete(StatusCodes.OK, posts)
+          }
         }
       }
     }

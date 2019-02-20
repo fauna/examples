@@ -1,6 +1,6 @@
-# FaunaDB Demo App
+# FaunaDB CRUD REST Service Example
 
-This is a demo application which showcases how to create a simple CRUD REST service backed by FaunaDB. The examples presented in the [Getting Started](https://app.fauna.com/documentation/gettingstarted) and [CRUD](https://app.fauna.com/documentation/howto/crud) guides have been used as starting point for implementing the service.
+This is an example application which showcases how to create a simple CRUD REST service backed by FaunaDB. The examples presented in the [Getting Started](https://app.fauna.com/documentation/gettingstarted) and [CRUD](https://app.fauna.com/documentation/howto/crud) guides have been used as starting point for its implementation.
 
 __Table of Contents__
 
@@ -20,6 +20,7 @@ __Table of Contents__
   * [Find a Post](#find-a-post)
   * [Find all Posts](#find-all-posts)
   * [Find Posts by Title](#find-posts-by-title)
+  * [Remove a Post](#remove-a-post)
 
 ## Prerequisites
 
@@ -232,9 +233,16 @@ Retrieves all existent Posts.
 GET /posts
 ```
 
+##### Query Parameters
+| Name    | Description                                                                    |
+|---------|--------------------------------------------------------------------------------|
+| size    | [Optional] – Maximum number of results to return in a single page                |
+| before  | [Optional] – Return the previous page of results before this cursor (exclusive)  |
+| after   | [Optional] – Return the next page of results after this cursor (inclusive)       |
+
 ##### curl example
 ```
-$ curl -XGET 'http://localhost:9000/posts'
+$ curl -XGET 'http://localhost:9000/posts?size=3'
 ```
 
 #### Response
@@ -245,23 +253,26 @@ Status: 200 - OK
 
 ```
 Content-type: application/json
-[
-  {
-    "id": "219970669169869319",
-    "title": "My cat and other marvels",
-    "tags": ["pet", "cute"]
-  },
-  {
-    "id": "219970865138237959",
-    "title": "Pondering during a commute",
-    "tags": ["commuting"]
-  },
-  {
-    "id": "219970873639043587",
-    "title": "Deep meanings in a latte",
-    "tags": ["coffee"]
-  }
-]
+{
+  "data": [
+    {
+      "id": "219970669169869319",
+      "title": "My cat and other marvels",
+      "tags": ["pet", "cute"]
+    },
+    {
+      "id": "219970865138237959",
+      "title": "Pondering during a commute",
+      "tags": ["commuting"]
+    },
+    {
+      "id": "219970873639043587",
+      "title": "Deep meanings in a latte",
+      "tags": ["coffee"]
+    }
+  ],
+  "after": "222946628695228935"
+}
 ```
 
 ### Retrieve Posts by Title
@@ -273,22 +284,33 @@ Retrieves all the existent Posts matching the given Title.
 GET /posts?title={post_title}
 ```
 
-#### Response
+##### Query Parameters
+| Name    | Description                                                                    |
+|---------|--------------------------------------------------------------------------------|
+| title   | The title of the Post to match with                                            |
+| size    | [Optional] – Maximum number of results to return in a single page                |
+| before  | [Optional] – Return the previous page of results before this cursor (exclusive)  |
+| after   | [Optional] – Return the next page of results after this cursor (inclusive)       |
 
-```
-Content-type: application/json
-[
-  {
-    "id": "219970669169869319",
-    "title": "My cat and other marvels",
-    "tags": ["pet", "cute"]
-  }
-]
-```
 ##### curl example
 
 ```
 $ curl -XGET 'http://localhost:9000/posts?title=My%20cat%20and%20other%20marvels'
+```
+
+#### Response
+
+```
+Content-type: application/json
+{
+  "data": [
+    {
+      "id": "219970669169869319",
+      "title": "My cat and other marvels",
+      "tags": ["pet", "cute"]
+    }
+  ]
+}
 ```
 
 ### Replace a Post
@@ -320,6 +342,7 @@ $ curl -XPUT -H "Content-type: application/json" -d '{
 ```
 Status: 200 - OK
 ```
+
 ```
 Content-type: application/json
 {
@@ -353,6 +376,7 @@ $ curl -XDELETE 'http://localhost:9000/posts/219871526709625348'
 ```
 Status: 200 - OK
 ```
+
 ```
 Content-type: application/json
 {
@@ -369,10 +393,10 @@ The persistence layer has been modeled after Domain-Driven Design Repository pat
 
 > __A word on the Repository pattern...__
 > 
-> Unlike DAOs, which are designed following a data access orientation, Repositories are implemented following a collection orientation. This means that their interface will mimic the one of a collection of objects rather than exposing a set of CRUD operations. The focus is put this way on the domain as a model rather than on data and any CRUD operations that may be used behind the scenes to manage the actual persistence.
+> Unlike DAOs, which are designed following a data access orientation, Repositories are implemented after a collection orientation. This means that their interface will mimic the one of a collection of objects rather than exposing a set of CRUD operations. The focus is put this way on the domain as a model rather than on data and any CRUD operations that may be used behind the scenes to manage the actual persistence.
 
 ### Save a Post
-If there's no previous Post for the given Id, it creates a new Post using an autogenerated Id and the given data. If there's a Post for the given Id, it replaces its content with the given data.
+It creates a new a Post for the given Id with the provided data. If a Post already exists for the given Id, its data is replaced with the one supplied.
 
 ```scala
 Select(
@@ -380,14 +404,14 @@ Select(
   If(
     Exists(Ref(Class("posts"), "1520225686617873")),
     Replace(
-      Ref(Class("posts"), "1520225686617873"), 
-      Obj("data" -> Obj("title" -> "My cat and other marvels")))
-    )
+      Ref(Class("posts"), "1520225686617873"),
+      Obj("data" -> Obj("title" -> "My cat and other marvels"))
+    ),
     Create(
-      Ref(Class("posts"), "1520225686617873"), 
-      Obj("data" -> Obj("title" -> "My cat and other marvels"))))
+      Ref(Class("posts"), "1520225686617873"),
+      Obj("data" -> Obj("title" -> "My cat and other marvels"))
     )
-  )  
+  )
 )
 ```
 
@@ -404,7 +428,7 @@ It saves several Posts within a single transaction. It uses the `Map` function t
 ```scala
 Map(
   Arr(Obj("data" -> Obj("title" -> "My cat and other marvels")))),
-  Lambda( nextEntity => 
+  Lambda( nextEntity =>
     //-- Save Query goes here
   )
 ```
@@ -418,7 +442,7 @@ It looks up a Post by its Id and returns its data back.
 
 ```scala
 Select(
-  "data", 
+  "data",
   Get(Ref(Class("posts"), "1520225686617873"))
 )
 ```
@@ -431,13 +455,10 @@ Select(
 It looks up all Posts in the class and returns its data back. First, all Posts Ids are found using the class `Index` together with the `Paginate` function and then its data is looked up through the `Get` function.
 
 ```scala
-
-SelectAll(
-  "data",
-  Map(
-    Paginate(Match(Index("all_posts"))),
-    Lambda( nextRef => 
-      Select("data", Get(nextRef)))
+Map(
+  Paginate(Match(Index("all_posts"))),
+  Lambda( nextRef =>
+    Select("data", Get(nextRef))
   )
 )
 ```
@@ -454,12 +475,10 @@ SelectAll(
 It looks up all Posts matching the given Title and returns its data. The search is done using a previsouly created `Index`.  First, all Posts Ids are found using the `Index` together with the `Paginate` function and then its data is looked up through the `Get` function.
 
 ```scala
-SelectAll(
-  "data",
-  Map(
-    Paginate(Match(Index(posts_by_title)), "My cat and other marvels"),
-    Lambda( nextRef => 
-      Select("data", Get(nextRef)))
+Map(
+  Paginate(Match(Index("posts_by_title"), "My cat and other marvels")),
+  Lambda( nextRef =>
+    Select("data", Get(nextRef))
   )
 )
 ```

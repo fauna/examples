@@ -1,6 +1,6 @@
 package persistence
 
-import model.Entity
+import model.{Entity, Page, PaginationOptions}
 
 import scala.concurrent.Future
 
@@ -21,7 +21,7 @@ trait Repository[A <: Entity] extends IdentityFactory {
   def saveAll(entities: A*): Future[Seq[A]]
   def remove(id: String): Future[Option[A]]
   def find(id: String): Future[Option[A]]
-  def findAll(): Future[Seq[A]]
+  def findAll()(implicit po: PaginationOptions): Future[Page[A]]
 }
 
 /**

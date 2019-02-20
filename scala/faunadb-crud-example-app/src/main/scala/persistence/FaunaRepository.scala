@@ -5,7 +5,7 @@ import faunadb.FaunaClient
 import faunadb.errors.NotFoundException
 import faunadb.query.{Class, Obj, _}
 import faunadb.values.{Decoder, _}
-import model.Entity
+import model.{Entity, Page, PaginationOptions}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -84,18 +84,21 @@ trait FaunaRepository[A <: Entity] extends Repository[A] with FaunaRepository.Im
     result.optDecode[A]
   }
 
-  def findAll(): Future[Seq[A]] = {
-    val result: Future[Value] = client.query(
-      SelectAll(
-        "data",
+  def findAll()(implicit po: PaginationOptions): Future[Page[A]] = {
+    val beforeCursor = po.before.map(id => Before(Ref(Class(className), id)))
+    val afterCursor = po.after.map(id => After(Ref(Class(className), id)))
+    val cursor = beforeCursor.orElse(afterCursor).getOrElse(NoCursor)
+
+    val result: Future[Value] = {
+      client.query(
         Map(
-          Paginate(Match(Index(classIndexName))),
+          Paginate(Match(Index(classIndexName)), size = po.size, cursor = cursor),
           Lambda(nextRef => Select("data", Get(nextRef)))
         )
       )
-    )
+    }
 
-    result.decode[Seq[A]]
+    result.decode[Page[A]]
   }
 
   protected def saveQuery(id: Expr, data: Expr): Expr =
@@ -113,6 +116,20 @@ trait FaunaRepository[A <: Entity] extends Repository[A] with FaunaRepository.Im
 object FaunaRepository {
 
   trait Implicits {
+
+    implicit def pageDecoder[A](implicit decoder: Decoder[A]): Decoder[Page[A]] = new Decoder[Page[A]] {
+      def decode(v: Value, path: FieldPath): Result[Page[A]] = {
+        val before = v("before").to[Seq[RefV]].map(_.head.id).toOpt
+        val after = v("after").to[Seq[RefV]].map(_.head.id).toOpt
+
+        val result: Result[Page[A]] =
+          v("data").to[Seq[A]].map { data =>
+            Page(data, before, after)
+          }
+
+        result
+      }
+    }
 
     implicit class ExtendedFutureValue(value: Future[Value]) {
       def decode[A: Decoder](implicit ec: ExecutionContext): Future[A] = value.map(_.to[A].get)

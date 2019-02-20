@@ -1,6 +1,6 @@
 package services
 
-import model.{CreateReplacePostData, Post}
+import model.{CreateReplacePostData, Page, PaginationOptions, Post}
 import persistence.PostRepository
 
 import scala.concurrent.Future
@@ -40,10 +40,10 @@ class PostService(repository: PostRepository) extends Service {
   def retrievePost(id: String): Future[Option[Post]] =
     repository.find(id)
 
-  def retrievePosts(): Future[Seq[Post]] =
+  def retrievePosts()(implicit po: PaginationOptions): Future[Page[Post]] =
     repository.findAll()
 
-  def retrievePostsByTitle(title: String): Future[Seq[Post]] =
+  def retrievePostsByTitle(title: String)(implicit po: PaginationOptions): Future[Page[Post]] =
     repository.findByTitle(title)
 
   def replacePost(id: String, data: CreateReplacePostData): Future[Option[Post]] = {
