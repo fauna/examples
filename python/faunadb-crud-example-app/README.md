@@ -14,13 +14,6 @@ __Table of Contents__
   * [Retrieve Posts by Tags](#retrieve-posts-by-tags)
   * [Replace a Post](#replace-a-post)
   * [Delete a Post](#delete-a-post)
-* [FQL Reference](#fql-reference)
-  * [Save a Post](#save-a-post)
-  * [Save several Posts](#save-several-posts)
-  * [Find a Post](#find-a-post)
-  * [Find all Posts](#find-all-posts)
-  * [Find Posts by Title](#find-posts-by-title)
-  * [Remove a Post](#remove-a-post)
 
 ## Prerequisites
 
