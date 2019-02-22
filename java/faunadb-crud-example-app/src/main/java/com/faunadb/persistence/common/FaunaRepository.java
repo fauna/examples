@@ -3,8 +3,11 @@ package com.faunadb.persistence.common;
 import com.faunadb.client.FaunaClient;
 import com.faunadb.client.errors.NotFoundException;
 import com.faunadb.client.query.Expr;
+import com.faunadb.client.query.Pagination;
 import com.faunadb.client.types.Value;
 import com.faunadb.model.common.Entity;
+import com.faunadb.model.common.Page;
+import com.faunadb.model.common.PaginationOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.Class;
@@ -126,18 +129,19 @@ public abstract class FaunaRepository<T extends Entity> implements Repository<T>
     }
 
     @Override
-    public CompletableFuture<List<T>> findAll() {
-        CompletableFuture<List<T>> result =
+    public CompletableFuture<Page<T>> findAll(PaginationOptions po) {
+        Pagination paginationQuery = Paginate(Match(Index(Value(classIndexName))));
+        po.getSize().ifPresent(size -> paginationQuery.size(size));
+        po.getAfter().ifPresent(after -> paginationQuery.after(Ref(Class(className), Value(after))));
+        po.getBefore().ifPresent(before -> paginationQuery.before(Ref(Class(className), Value(before))));
+
+        CompletableFuture<Page<T>> result =
             client.query(
-                SelectAll(
-                    Value("data"),
-                    Map(
-                        Paginate(Match(Index(Value(classIndexName)))),
-                        Lambda(Value("nextRef"), Select(Value("data"), Get(Var("nextRef"))))
-                    )
+                Map(
+                    paginationQuery,
+                    Lambda(Value("nextRef"), Select(Value("data"), Get(Var("nextRef"))))
                 )
-            )
-            .thenApply(this::toList);
+            ).thenApply(this::toPage);
 
         return result;
     }
@@ -162,6 +166,14 @@ public abstract class FaunaRepository<T extends Entity> implements Repository<T>
 
     protected List<T> toList(Value value) {
         return value.asCollectionOf(entityType).get().stream().collect(Collectors.toList());
+    }
+
+    protected Page<T> toPage(Value value) {
+        Optional<String> after = value.at("after").asCollectionOf(Value.RefV.class).map(c -> c.iterator().next().getId()).getOptional();
+        Optional<String> before = value.at("before").asCollectionOf(Value.RefV.class).map(c -> c.iterator().next().getId()).getOptional();
+        List<T> data = value.at("data").collect(entityType).stream().collect(Collectors.toList());
+        Page<T> page = new Page(data, before, after);
+        return page;
     }
 
     protected CompletableFuture<Optional<T>> toOptionalResult(CompletableFuture<T> result) {

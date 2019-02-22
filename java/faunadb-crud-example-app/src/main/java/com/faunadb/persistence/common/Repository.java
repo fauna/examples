@@ -1,6 +1,8 @@
 package com.faunadb.persistence.common;
 
 import com.faunadb.model.common.Entity;
+import com.faunadb.model.common.Page;
+import com.faunadb.model.common.PaginationOptions;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,5 +13,5 @@ public interface Repository<T extends Entity> {
     CompletableFuture<List<T>> saveAll(List<T> entities);
     CompletableFuture<Optional<T>> remove(String id);
     CompletableFuture<Optional<T>> find(String id);
-    CompletableFuture<List<T>> findAll();
+    CompletableFuture<Page<T>> findAll(PaginationOptions po);
 }

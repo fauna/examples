@@ -2,6 +2,8 @@ package com.faunadb.services;
 
 import com.faunadb.model.CreateReplacePostData;
 import com.faunadb.model.Post;
+import com.faunadb.model.common.Page;
+import com.faunadb.model.common.PaginationOptions;
 import com.faunadb.persistence.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,12 +47,12 @@ public class PostService {
         return postRepository.find(id);
     }
 
-    public CompletableFuture<List<Post>> retrievePosts() {
-        return postRepository.findAll();
+    public CompletableFuture<Page<Post>> retrievePosts(PaginationOptions po) {
+        return postRepository.findAll(po);
     }
 
-    public CompletableFuture<List<Post>> retrievePostsByTitle(String title) {
-        return postRepository.findByTitle(title);
+    public CompletableFuture<Page<Post>> retrievePostsByTitle(String title, PaginationOptions po) {
+        return postRepository.findByTitle(title, po);
     }
 
     public CompletableFuture<Optional<Post>> replacePost(String id, CreateReplacePostData data) {

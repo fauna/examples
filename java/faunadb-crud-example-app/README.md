@@ -233,9 +233,16 @@ Retrieves all existent Posts.
 GET /posts
 ```
 
+##### Query Parameters
+| Name    | Description                                                                    |
+|---------|--------------------------------------------------------------------------------|
+| size    | [Optional] – Maximum number of results to return in a single page                |
+| before  | [Optional] – Return the previous page of results before this cursor (exclusive)  |
+| after   | [Optional] – Return the next page of results after this cursor (inclusive)       |
+
 ##### curl example
 ```
-$ curl -XGET 'http://localhost:8080/posts'
+$ curl -XGET 'http://localhost:8080/posts?size=3'
 ```
 
 #### Response
@@ -246,23 +253,26 @@ Status: 200 - OK
 
 ```
 Content-type: application/json
-[
-  {
-    "id": "219970669169869319",
-    "title": "My cat and other marvels",
-    "tags": ["pet", "cute"]
-  },
-  {
-    "id": "219970865138237959",
-    "title": "Pondering during a commute",
-    "tags": ["commuting"]
-  },
-  {
-    "id": "219970873639043587",
-    "title": "Deep meanings in a latte",
-    "tags": ["coffee"]
-  }
-]
+{
+  "data": [
+    {
+      "id": "219970669169869319",
+      "title": "My cat and other marvels",
+      "tags": ["pet", "cute"]
+    },
+    {
+      "id": "219970865138237959",
+      "title": "Pondering during a commute",
+      "tags": ["commuting"]
+    },
+    {
+      "id": "219970873639043587",
+      "title": "Deep meanings in a latte",
+      "tags": ["coffee"]
+    }
+  ],
+  "after": "222946628695228935"
+}
 ```
 
 ### Retrieve Posts by Title
@@ -274,17 +284,27 @@ Retrieves all the existent Posts matching the given Title.
 GET /posts?title={post_title}
 ```
 
+##### Query Parameters
+| Name    | Description                                                                    |
+|---------|--------------------------------------------------------------------------------|
+| title   | The title of the Post to match with                                            |
+| size    | [Optional] – Maximum number of results to return in a single page                |
+| before  | [Optional] – Return the previous page of results before this cursor (exclusive)  |
+| after   | [Optional] – Return the next page of results after this cursor (inclusive)       |
+
 #### Response
 
 ```
 Content-type: application/json
-[
-  {
-    "id": "219970669169869319",
-    "title": "My cat and other marvels",
-    "tags": ["pet", "cute"]
-  }
-]
+{
+  "data": [
+    {
+      "id": "219970669169869319",
+      "title": "My cat and other marvels",
+      "tags": ["pet", "cute"]
+    }
+  ]
+}
 ```
 ##### curl example
 
@@ -433,12 +453,9 @@ Select(
 It looks up all Posts in the class and returns its data back. First, all Posts Ids are found using the class `Index` together with the `Paginate` function and then its data is looked up through the `Get` function.
 
 ```java
-SelectAll(
-  Value("data"),
-  Map(
-    Paginate(Match(Index("all_posts"))),
-    Lambda(Value("nextRef"), Select(Value("data"), Get(Var("nextRef"))))
-  )
+Map(
+  Paginate(Match(Index("all_posts"))),
+  Lambda(Value("nextRef"), Select(Value("data"), Get(Var("nextRef"))))
 )
 ```
 
@@ -454,12 +471,9 @@ SelectAll(
 It looks up all Posts matching the given Title and returns its data. The search is done using a previsouly created `Index`.  First, all Posts Ids are found using the `Index` together with the `Paginate` function and then its data is looked up through the `Get` function.
 
 ```java
-SelectAll(
-  Value("data"),
-  Map(
-    Paginate(Match(Index("posts_by_title"), Value("My cat and other marvels"))),
-    Lambda(Value("nextRef"), Select(Value("data"), Get(Var("nextRef"))))
-  )
+Map(
+  Paginate(Match(Index("posts_by_title"), Value("My cat and other marvels"))),
+  Lambda(Value("nextRef"), Select(Value("data"), Get(Var("nextRef"))))
 )
 ```
 
