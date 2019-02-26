@@ -2,10 +2,14 @@ package com.faunadb.model.common;
 
 import java.util.Optional;
 
+/**
+ * It defines parameters for looking up a result using pagination.
+ */
 public class PaginationOptions {
     private Optional<Integer> size;
     private Optional<String> before;
     private Optional<String> after;
+
 
     public PaginationOptions(Optional<Integer> size, Optional<String> before, Optional<String> after) {
         this.size = size;
