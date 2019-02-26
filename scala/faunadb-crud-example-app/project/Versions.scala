@@ -6,7 +6,7 @@ object Versions {
   val akkaHttpJson4sVersion     = "1.22.0"
   val json4sVersion             = "3.6.1"
 
-  val faunaDbVersion            = "2.5.6"
+  val faunaDbVersion            = "2.6.0"
 
   val scalaTestVersion          = "3.0.5"
   val scalaMockVersion          = "4.1.0"
