@@ -38,7 +38,7 @@ public class PostController {
             CreateReplacePostData data = unmarshalCreateReplacePostData(requestBody);
             CompletableFuture<ResponseEntity> result =
                 postService.createPost(data)
-                    .thenApply(post -> new ResponseEntity(post, HttpStatus.OK));
+                    .thenApply(post -> new ResponseEntity(post, HttpStatus.CREATED));
             return result;
         }
 
@@ -47,7 +47,7 @@ public class PostController {
             List<CreateReplacePostData> data = unmarshalCreateReplacePostDataCollection(requestBody);
             CompletableFuture<ResponseEntity> result =
                 postService.createSeveralPosts(data)
-                    .thenApply(post -> new ResponseEntity(post, HttpStatus.OK));
+                    .thenApply(post -> new ResponseEntity(post, HttpStatus.CREATED));
             return result;
         }
 
