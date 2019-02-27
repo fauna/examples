@@ -40,7 +40,7 @@ class Post(Resource):
             result = client.query(q.get(q.ref(q.class_("posts"), post_id)))
         except fauna_error.NotFound as e:
             app.logger.debug(e)
-            return Response(jsonify('Failed to fetch a post.'), status=404, mimetype='application/json')
+            return Response(jsonify('Failed to fetch a post - post not found.'), status=404, mimetype='application/json')
         except Exception as e:
             app.logger.debug(e)
             return Response(jsonify('Failed to fetch a post.'), status=500, mimetype='application/json')
@@ -57,7 +57,7 @@ class Post(Resource):
             result = client.query(q.delete(q.ref(q.class_("posts"), post_id)))
         except fauna_error.NotFound as e:
             app.logger.debug(e)
-            return Response(jsonify('Failed to delete a post.'), status=404, mimetype='application/json')
+            return Response(jsonify('Failed to delete a post - post not found.'), status=404, mimetype='application/json')
         except Exception as e:
             app.logger.debug(e)
             return Response(jsonify('Failed to delete a post.'), status=500, mimetype='application/json')
@@ -66,20 +66,17 @@ class Post(Resource):
 
     """
     Update a post:
-    curl -XPOST -H "Content-type: application/json" -d '{
+    curl -XPUT -H "Content-type: application/json" -d '{
         "title": "My dog and other wonders",
         "id": "223590710032466432"
     }' 'http://localhost:8080/post/'
     """
-    def post(self, post_id = None):
+    def put(self, post_id):
         request_json = request.get_json()
 
         data = {}
-        action = "create"
+        data['id'] = request_json['id']
 
-        if "id" in request_json:
-            data['id'] = request_json['id']
-            action = "update"
         if "title" in request_json:
             data['title'] = request_json['title']
         if "tags" in request_json:
@@ -91,17 +88,17 @@ class Post(Resource):
             result = client.query(query)
         except fauna_error.NotFound as e:
             app.logger.debug(e)
-            return Response(jsonify('Failed to ' + action + ' a post.'), status=404, mimetype='application/json')
+            return Response(jsonify('Failed to update post ' + data['id'] + ' - post not found.'), status=404, mimetype='application/json')
         except Exception as e:
             app.logger.debug(e)
-            return Response(jsonify('Failed to ' + action + ' a post.'), status=500, mimetype='application/json')
+            return Response(jsonify('Failed to update post ' + data['id'] + '.'), status=500, mimetype='application/json')
 
         return Response(json.dumps(to_json(result)), status=201, mimetype='application/json')
 
 """
 Gets a set of posts by the title via the posts_by_title index, or returns all posts if no parameter is 
 passed.
-Create a set of posts with put.
+Create a set of posts with post.
 """
 class PostList(Resource):
     """
@@ -127,22 +124,22 @@ class PostList(Resource):
     Create a set of posts - title is required, tags are optional.
     Single post data can be optionally wrapped in a list.
     Examples:
-    curl -XPUT -H "Content-type: application/json" -d '{
+    curl -XPOST -H "Content-type: application/json" -d '{
       "title": "My cat and other marvels"
      }' 'http://localhost:8080/posts/'
 
-    curl -XPUT -H "Content-type: application/json" -d '[{
+    curl -XPOST -H "Content-type: application/json" -d '[{
       "title": "My cat and other marvels",
       "tags": ["pet", "cute"]
      }]' 'http://localhost:8080/posts/'
 
-     curl -XPUT -H "Content-type: application/json" -d '{"posts": [
+     curl -XPOST -H "Content-type: application/json" -d '{"posts": [
         {"title": "My cat and other marvels", "tags": ["pet", "cute"]},
         {"title": "Pondering during a commute", "tags": ["commuting"]},
         {"title": "Deep meanings in a latte", "tags": ["coffee"]}
      ]}' 'http://localhost:8080/posts/'
     """
-    def put(self, post_title = None):
+    def post(self, post_title = None):
         json = request.get_json()
         data = []
 
