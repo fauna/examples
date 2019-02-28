@@ -3,6 +3,10 @@ package com.faunadb.persistence.common;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+/**
+ * It contains basic settings for initiating
+ * a {@link com.faunadb.client.FaunaClient}.
+ */
 @Component
 @ConfigurationProperties(prefix = "fauna-db")
 public class FaunaClientProperties {

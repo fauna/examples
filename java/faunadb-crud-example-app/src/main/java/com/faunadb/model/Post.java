@@ -6,13 +6,22 @@ import com.faunadb.model.common.Entity;
 
 import java.util.List;
 
+/**
+ * A Post entity.
+ *
+ * It represents a simple Post, like the one in a Blog,
+ * along with some basic attributes.
+ */
 public class Post extends Entity {
 
     private String title;
     private List<String> tags;
 
     @FaunaConstructor
-    public Post(@FaunaField("id") String id, @FaunaField("title") String title, @FaunaField("tags") List<String> tags) {
+    public Post(
+            @FaunaField("id") String id,
+            @FaunaField("title") String title,
+            @FaunaField("tags") List<String> tags) {
         this.id = id;
         this.title = title;
         this.tags = tags;

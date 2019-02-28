@@ -18,6 +18,13 @@ import java.util.stream.IntStream;
 import static com.faunadb.client.query.Language.Class;
 import static com.faunadb.client.query.Language.*;
 
+/**
+ * Base Repository implementation backed by FaunaDB.
+ *
+ * @param <T> a valid Entity type
+ *
+ * @see <a href="https://fauna.com/">FaunaDB</a>
+ */
 public abstract class FaunaRepository<T extends Entity> implements Repository<T>, IdentityFactory {
 
     @Autowired
@@ -33,6 +40,16 @@ public abstract class FaunaRepository<T extends Entity> implements Repository<T>
         this.classIndexName = classIndexName;
     }
 
+    /**
+     * <p>It returns a unique valid Id leveraging Fauna's NewId function.</p>
+     *
+     * <p>The produced Id is guaranteed to be unique across the entire
+     * cluster and once generated will never be generated a second time.</p>
+     *
+     * @return a unique valid Id
+     *
+     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#newid">NewId</a>
+     */
     @Override
     public CompletableFuture<String> nextId() {
         CompletableFuture<String> result =
@@ -44,6 +61,17 @@ public abstract class FaunaRepository<T extends Entity> implements Repository<T>
         return result;
     }
 
+    /**
+     * <p>It returns a List of unique valid Ids leveraging Fauna's NewId function.</p>
+     *
+     * <p>The produced Ids are guaranteed to be unique across the entire
+     * cluster and once generated will never be generated a second time.</p>
+     *
+     * @param size the number of unique Ids to return
+     * @return a List of unique valid Ids
+     *
+     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#newid">NewId</a>
+     */
     @Override
     public CompletableFuture<List<String>> nextIds(int size) {
         List<Integer> indexes = IntStream
@@ -64,6 +92,13 @@ public abstract class FaunaRepository<T extends Entity> implements Repository<T>
         return result;
     }
 
+    /**
+     * {@inheritDoc}
+     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#create">Create</a>
+     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#replace">Replace</a>
+     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#if">If</a>
+     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#exists">Exists</a>
+     */
     @Override
     public CompletableFuture<T> save(T entity) {
         CompletableFuture<T> result =
@@ -75,6 +110,14 @@ public abstract class FaunaRepository<T extends Entity> implements Repository<T>
         return result;
     }
 
+    /**
+     * {@inheritDoc}
+     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#create">Create</a>
+     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#replace">Replace</a>
+     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#if">If</a>
+     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#exists">Exists</a>
+     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#map">Map</a>
+     */
     @Override
     public CompletableFuture<List<T>> saveAll(List<T> entities) {
         CompletableFuture<List<T>> result =
@@ -93,6 +136,10 @@ public abstract class FaunaRepository<T extends Entity> implements Repository<T>
         return result;
     }
 
+    /**
+     * {@inheritDoc}
+     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#delete">Delete</a>
+     */
     @Override
     public CompletableFuture<Optional<T>> remove(String id) {
         CompletableFuture<T> result =
@@ -109,6 +156,10 @@ public abstract class FaunaRepository<T extends Entity> implements Repository<T>
         return optionalResult;
     }
 
+    /**
+     * {@inheritDoc}
+     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#get">Get</a>
+     */
     @Override
     public CompletableFuture<Optional<T>> find(String id) {
         CompletableFuture<T> result =
@@ -125,6 +176,11 @@ public abstract class FaunaRepository<T extends Entity> implements Repository<T>
         return optionalResult;
     }
 
+    /**
+     * {@inheritDoc}
+     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#paginate">Paginate</a>
+     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#map">Map</a>
+     */
     @Override
     public CompletableFuture<List<T>> findAll() {
         CompletableFuture<List<T>> result =
@@ -142,6 +198,20 @@ public abstract class FaunaRepository<T extends Entity> implements Repository<T>
         return result;
     }
 
+    /**
+     * It leverages Fauna Query Language enriched features to build
+     * a transactional query for performing a valid {@link Repository#save} operation.
+     *
+     * @param id the Id of the Entity to be saved
+     * @param data the data of the Entity to be saved
+     *
+     * @return a query for performing a valid {@link Repository#save} operation
+     *
+     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#create">Create</a>
+     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#replace">Replace</a>
+     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#if">If</a>
+     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#exists">Exists</a>
+     */
     protected Expr saveQuery(Expr id, Expr data) {
         Expr query =
             Select(
@@ -156,14 +226,56 @@ public abstract class FaunaRepository<T extends Entity> implements Repository<T>
         return query;
     }
 
+    /**
+     * <p>It converts a FaunaDB {@link Value} into an {@link Entity}.</p>
+     *
+     * <p>In order this to work, the concrete Entity class to be converted
+     * must include Fauna's encoding annotations.</p>
+     *
+     * @param value the Value to convert from
+     * @return the converted Entity from the given Value
+     *
+     * @see <a href="https://github.com/fauna/faunadb-jvm/blob/master/docs/java.md#how-to-work-with-user-defined-classes">Encoding and decoding user defined classes</a>
+     */
     protected T toEntity(Value value) {
         return value.to(entityType).get();
     }
 
+    /**
+     * <p>It converts a FaunaDB {@link Value} into a List of {@link Entity}.</p>
+     *
+     * <p>In order this to work, the concrete Entity class to be converted
+     * must include Fauna's encoding annotations. At the same time, the
+     * Value to convert from must be of a Fauna Array type.</p>
+     *
+     * @param value the Value to convert from
+     * @return the converted Entity from the given Value
+     *
+     * @see <a href="https://github.com/fauna/faunadb-jvm/blob/master/docs/java.md#how-to-work-with-user-defined-classes">Encoding and decoding user defined classes</a>
+     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#array">Array</a>
+     *
+     */
     protected List<T> toList(Value value) {
         return value.asCollectionOf(entityType).get().stream().collect(Collectors.toList());
     }
 
+    /**
+     * <p>It recovers from a {@link NotFoundException} with an Optional result.</p>
+     *
+     * <p>If the given {@link CompletableFuture} contains a successful result, it returns
+     * a new {@link CompletableFuture} containing the result wrapped in an {@link Optional} instance.</p>
+     *
+     * <p>If the given {@link CompletableFuture} contains a failing result caused
+     * by a {@link NotFoundException}, it returns a new {@link CompletableFuture} containing
+     * an empty {@link Optional} instance.</p>
+     *
+     * <p>If the given {@link CompletableFuture} contains a failing result caused
+     * by any other {@link Throwable}, it returns a new {@link CompletableFuture} with
+     * the same failing result.</p>
+     *
+     * @param result the result to transform from
+     * @return a new Optional result derived from the original result
+     */
     protected CompletableFuture<Optional<T>> toOptionalResult(CompletableFuture<T> result) {
         CompletableFuture<Optional<T>> optionalResult =
             result.handle((v, t) -> {

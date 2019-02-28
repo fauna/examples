@@ -9,6 +9,9 @@ import java.util.concurrent.CompletableFuture;
 
 import static com.faunadb.client.query.Language.*;
 
+/**
+ * {@link FaunaRepository} implementation for the {@link Post} entity.
+ */
 @Repository
 public class PostRepository extends FaunaRepository<Post> {
 
@@ -17,6 +20,16 @@ public class PostRepository extends FaunaRepository<Post> {
     }
 
     //-- Custom repository operations specific to the current entity go below --//
+
+    /**
+     * It finds all Posts matching the given title.
+     *
+     * @param title the title to find Posts by
+     * @return a list of Posts matching the given title
+     *
+     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#paginate">Paginate</a>
+     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#map">Map</a>
+     */
     public CompletableFuture<List<Post>> findByTitle(String title) {
         CompletableFuture<List<Post>> result =
             client.query(
