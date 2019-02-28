@@ -15,6 +15,15 @@ public class FaunaClientConfig {
     @Autowired
     private FaunaClientProperties faunaProperties;
 
+    /**
+     * It initiates a singleton {@link FaunaClient} instance
+     * using the settings defined at {@link FaunaClientProperties}.
+     * This allows the {@link FaunaClient} to be properly injected
+     * in any other application component.
+     *
+     * @return a singleton {@link FaunaClient} instance
+     * @throws MalformedURLException if the provided endpoint is an invalid URL
+     */
     @Bean
     @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
     public FaunaClient faunaClient() throws MalformedURLException {
