@@ -14,12 +14,23 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * Domain Service for the {@link Post} entity.
+ */
 @Service
 public class PostService {
 
     @Autowired
     private PostRepository postRepository;
 
+    /**
+     * It builds up a new {@link Post} entity with the
+     * given {@link CreateReplacePostData} and a generated
+     * valid Id. Then, it saves the new entity into the repository.
+     *
+     * @param data the data to create the new Post entity
+     * @return the new created Post entity
+     */
     public CompletableFuture<Post> createPost(CreateReplacePostData data) {
         CompletableFuture<Post> result =
             postRepository.nextId()
@@ -29,6 +40,15 @@ public class PostService {
         return result;
     }
 
+    /**
+     * It builds up a several {@link Post} entities with the
+     * given {@link CreateReplacePostData} objects and generated
+     * valid Ids. Then, it saves all of the new entities into
+     * the repository.
+     *
+     * @param data the data to create the new Post entities
+     * @return a list of the new created Post entities
+     */
     public CompletableFuture<List<Post>> createSeveralPosts(List<CreateReplacePostData> data) {
         CompletableFuture<List<Post>> result =
             postRepository.nextIds(data.size())
@@ -43,18 +63,42 @@ public class PostService {
         return result;
     }
 
+    /**
+     * It retrieves a {@link Post} by its Id from the repository.
+     *
+     * @param id the Id of the Post to retrieve
+     * @return an Optional result with the requested Post if any
+     */
     public CompletableFuture<Optional<Post>> retrievePost(String id) {
         return postRepository.find(id);
     }
 
+    /**
+     * It retrieves a list of all {@link Post} entities from the repository.
+     * @return a list of all {@link Post} entities
+     */
+    // TODO: update JavaDoc
     public CompletableFuture<Page<Post>> retrievePosts(PaginationOptions po) {
         return postRepository.findAll(po);
     }
 
-    public CompletableFuture<Page<Post>> retrievePostsByTitle(String title, PaginationOptions po) {
+    /**
+     * It retrieves a list of all {@link Post} entities from the repository.
+     * @return a list of all {@link Post} entities
+     */
+    // TODO: update JavaDoc
+    public CompletableFuture<Page<Post>> retrievePostsByTitle(String title, PaginationOptions po){
         return postRepository.findByTitle(title, po);
     }
 
+    /**
+     * It looks up a {@link Post} for the given Id and replaces it
+     * with the given {@link CreateReplacePostData} if any.
+     *
+     * @param id the Id of the Post to replace
+     * @param data the data to replace the Post with
+     * @return an Optional result with the replaced Post if any
+     */
     public CompletableFuture<Optional<Post>> replacePost(String id, CreateReplacePostData data) {
         CompletableFuture<Optional<Post>> result =
             postRepository.find(id)
@@ -66,6 +110,12 @@ public class PostService {
         return result;
     }
 
+    /**
+     * It deletes a {@link Post} from the repository for the given Id.
+     *
+     * @param id the Id of the Post to delete
+     * @return an Optional result with the deleted Post if any
+     */
     public CompletableFuture<Optional<Post>> deletePost(String id) {
         return postRepository.remove(id);
     }

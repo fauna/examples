@@ -2,6 +2,10 @@ package com.faunadb.model;
 
 import java.util.List;
 
+/**
+ * It contains all the necessary data, with the exception of
+ * the Id, for creating or replacing a {@link com.faunadb.model.Post} entity.
+ */
 public class CreateReplacePostData {
 
     private String title;

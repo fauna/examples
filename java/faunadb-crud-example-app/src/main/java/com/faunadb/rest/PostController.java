@@ -20,6 +20,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * REST controller for the {@link Post} entity.
+ */
 @RestController
 public class PostController {
 
@@ -35,7 +38,7 @@ public class PostController {
 
         // Create single Post
         if(isCreateReplacePostData(requestBody)) {
-            CreateReplacePostData data = unmarshalCreateReplacePostData(requestBody);
+            CreateReplacePostData data = deserializeCreateReplacePostData(requestBody);
             CompletableFuture<ResponseEntity> result =
                 postService.createPost(data)
                     .thenApply(post -> new ResponseEntity(post, HttpStatus.CREATED));
@@ -43,8 +46,8 @@ public class PostController {
         }
 
         // Create several Posts
-        if(isCreateReplacePostDataArray(requestBody)) {
-            List<CreateReplacePostData> data = unmarshalCreateReplacePostDataCollection(requestBody);
+        if(isCreateReplacePostDataList(requestBody)) {
+            List<CreateReplacePostData> data = deserializeCreateReplacePostDataList(requestBody);
             CompletableFuture<ResponseEntity> result =
                 postService.createSeveralPosts(data)
                     .thenApply(post -> new ResponseEntity(post, HttpStatus.CREATED));
@@ -113,6 +116,14 @@ public class PostController {
         return result;
     }
 
+    /**
+     * It verifies if the given JSON payload can be
+     * deserialized into a {@link CreateReplacePostData} object.
+     *
+     * @param json the JSON payload to verify
+     * @return true if the given JSON payload can be deserialize into a a {@link CreateReplacePostData} object, false if not
+     * @throws IOException if there's any error with the given JSON payload
+     */
     private Boolean isCreateReplacePostData(String json) throws IOException {
         try {
             objectMapper.readValue(json, CreateReplacePostData.class);
@@ -122,7 +133,15 @@ public class PostController {
         }
     }
 
-    private Boolean isCreateReplacePostDataArray(String json) throws IOException {
+    /**
+     * It verifies if the given JSON payload can be
+     * deserialized into a {@link List} of {@link CreateReplacePostData} object.
+     *
+     * @param json the JSON payload to verify
+     * @return true if the given JSON payload can be deserialize into a {@link List} of {@link CreateReplacePostData} objects, false if not
+     * @throws IOException if there's any error with the given JSON payload
+     */
+    private Boolean isCreateReplacePostDataList(String json) throws IOException {
         try {
             objectMapper.readValue(json, new TypeReference<List<CreateReplacePostData>>(){});
             return true;
@@ -131,11 +150,25 @@ public class PostController {
         }
     }
 
-    private CreateReplacePostData unmarshalCreateReplacePostData(String json) throws IOException {
+    /**
+     * It deserializes the given JSON payload into a {@link CreateReplacePostData} object.
+     *
+     * @param json the JSON payload to deserialize
+     * @return a {@link CreateReplacePostData} deserialized from the given JSON payload
+     * @throws IOException if there's any error with the given JSON payload
+     */
+    private CreateReplacePostData deserializeCreateReplacePostData(String json) throws IOException {
         return objectMapper.readValue(json, CreateReplacePostData.class);
     }
 
-    private List<CreateReplacePostData> unmarshalCreateReplacePostDataCollection(String json) throws IOException {
+    /**
+     * It deserializes the given JSON payload into a {@link List} of {@link CreateReplacePostData} objects.
+     *
+     * @param json the JSON payload to deserialize
+     * @return a {@link List} of {@link CreateReplacePostData} objects deserialized from the given JSON payload
+     * @throws IOException if there's any error with the given JSON payload
+     */
+    private List<CreateReplacePostData> deserializeCreateReplacePostDataList(String json) throws IOException {
         return objectMapper.readValue(json, new TypeReference<List<CreateReplacePostData>>(){});
     }
 }

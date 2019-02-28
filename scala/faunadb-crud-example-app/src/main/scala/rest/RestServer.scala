@@ -1,12 +1,10 @@
 package rest
 
-import java.time.Instant
-
 import akka.actor.{ActorSystem, CoordinatedShutdown, ExtendedActorSystem, Extension, ExtensionId, ExtensionIdProvider}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.server.{Directive0, Directive1, Route}
 import akka.stream.ActorMaterializer
 import com.typesafe.config.Config
 import faunadb.FaunaClient
@@ -67,25 +65,29 @@ object RestServerSettings extends ExtensionId[RestServerSettings] with Extension
 
 // Filters
 object FaunaFilter {
+  val LastTxnTimeHeaderName = "X-Last-Txn-Time"
+
   def filter(routes: Route)(implicit faunaClient: FaunaClient): Route =
     // Extract lastXtnTime from Request
-    optionalHeaderValueByName("X-Last-Txn-Time") { lastXtnTimeHeaderValue =>
-      lastXtnTimeHeaderValue
-        .flatMap(toLong)
-        .foreach { lastTxnTime =>
-          // TODO: call syncLastTxnTime when new driver is released
-          // faunaClient.syncLastTxnTime(lastSeenXtn)
-        }
+    extractLastTxnTime { lastXtnTime =>
+      lastXtnTime.foreach { lastTxnTime =>
+        faunaClient.syncLastTxnTime(lastTxnTime)
+      }
       // Put back updated lastXtnTime into Response
-      mapResponseHeaders { responseHeaders =>
-        // TODO: call lastTxnTime when new driver is released
-        // val = faunaClient.lastTxnTime(lastSeenXtn)
-        val lastTxnTime = Instant.now().toEpochMilli
-        responseHeaders :+ RawHeader("X-Last-Txn-Time", lastTxnTime.toString)
-      } {
+      val lastTxnTime = faunaClient.lastTxnTime
+      addLastTxnTime(lastTxnTime) {
         routes
       }
     }
 
-  private def toLong(value: String): Option[Long] = Try(value.toLong).toOption
+  val extractLastTxnTime: Directive1[Option[Long]] = {
+    def toLong(value: String): Option[Long] = Try(value.toLong).toOption
+    optionalHeaderValueByName(LastTxnTimeHeaderName).map(_.flatMap(toLong))
+  }
+
+  def addLastTxnTime(lastTxnTime: Long): Directive0 =
+    mapResponseHeaders { responseHeaders =>
+      responseHeaders :+ RawHeader(LastTxnTimeHeaderName, lastTxnTime.toString)
+    }
+
 }
