@@ -74,19 +74,24 @@ public class PostService {
     }
 
     /**
-     * It retrieves a list of all {@link Post} entities from the repository.
-     * @return a list of all {@link Post} entities
+     * It retrieves a {@link Page} of {@link Post} entities from
+     * the repository for the given {@link PaginationOptions}.
+     *
+     * @param po the {@link PaginationOptions} to determine which {@link Page} of results to return
+     * @return a {@link Page} of Entities
      */
-    // TODO: update JavaDoc
     public CompletableFuture<Page<Post>> retrievePosts(PaginationOptions po) {
         return postRepository.findAll(po);
     }
 
     /**
-     * It retrieves a list of all {@link Post} entities from the repository.
-     * @return a list of all {@link Post} entities
+     * It retrieves a {@link Page} of {@link Post} entities
+     * from the repository matching the given title.
+     *
+     * @param title title to find Posts by
+     * @param po the {@link PaginationOptions} to determine which {@link Page} of results to return
+     * @return a {@link Page} of {@link Post} entities
      */
-    // TODO: update JavaDoc
     public CompletableFuture<Page<Post>> retrievePostsByTitle(String title, PaginationOptions po){
         return postRepository.findByTitle(title, po);
     }

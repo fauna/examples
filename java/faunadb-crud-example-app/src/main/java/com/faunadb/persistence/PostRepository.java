@@ -26,11 +26,9 @@ public class PostRepository extends FaunaRepository<Post> {
     /**
      * It finds all Posts matching the given title.
      *
-     * @param title the title to find Posts by
-     * @return a list of Posts matching the given title
-     *
-     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#paginate">Paginate</a>
-     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#map">Map</a>
+     * @param title title to find Posts by
+     * @param po the {@link PaginationOptions} to determine which {@link Page} of results to return
+     * @return a {@link Page} of {@link Post} entities
      */
     public CompletableFuture<Page<Post>> findByTitle(String title, PaginationOptions po) {
         Pagination paginationQuery = Paginate(Match(Index(Value("posts_by_title")), Value(title)));
@@ -39,13 +37,13 @@ public class PostRepository extends FaunaRepository<Post> {
         po.getBefore().ifPresent(before -> paginationQuery.before(Ref(Class(className), Value(before))));
 
         CompletableFuture<Page<Post>> result =
-                client.query(
-                        Map(
-                                paginationQuery,
-                                Lambda(Value("nextRef"), Select(Value("data"), Get(Var("nextRef"))))
-                        )
+            client.query(
+                Map(
+                    paginationQuery,
+                    Lambda(Value("nextRef"), Select(Value("data"), Get(Var("nextRef"))))
                 )
-                        .thenApply(this::toPage);
+            )
+            .thenApply(this::toPage);
 
         return result;
     }

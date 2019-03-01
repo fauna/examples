@@ -246,7 +246,7 @@ public abstract class FaunaRepository<T extends Entity> implements Repository<T>
     }
 
     /**
-     * <p>It converts a FaunaDB {@link Value} into a List of {@link Entity}.</p>
+     * <p>It converts a FaunaDB {@link Value} into a {@link List} with {@link Entity} type.</p>
      *
      * <p>In order this to work, the concrete Entity class to be converted
      * must include Fauna's encoding annotations. At the same time, the
@@ -263,12 +263,36 @@ public abstract class FaunaRepository<T extends Entity> implements Repository<T>
         return value.asCollectionOf(entityType).get().stream().collect(Collectors.toList());
     }
 
-    // TODO: add JavaDoc
+    /**
+     * <p>It converts a FaunaDB {@link Value} into a {@link Page} with {@link Entity} type.</p>
+     *
+     * <p>In order this to work, the concrete Entity class to be converted
+     * must include Fauna's encoding annotations. At the same time, the
+     * Value to convert from must be of a Fauna Page type.</p>
+     *
+     * @param value the Value to convert from
+     * @return the converted Entity from the given Value
+     *
+     * @see <a href="https://github.com/fauna/faunadb-jvm/blob/master/docs/java.md#how-to-work-with-user-defined-classes">Encoding and decoding user defined classes</a>
+     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#page">Page</a>
+     *
+     */
     protected Page<T> toPage(Value value) {
+        /*
+         * Note that below code for extracting the data within the "after"
+         * and the "before" cursors directly depends on the definition of
+         * the Index from which the Page is being derived. For this particular
+         * case, the Index return values should only contain the Ref field
+         * from the Instances being covered by the Index. If the Index return
+         * values should contain more fields, update below code accordingly.
+         */
         Optional<String> after = value.at("after").asCollectionOf(Value.RefV.class).map(c -> c.iterator().next().getId()).getOptional();
         Optional<String> before = value.at("before").asCollectionOf(Value.RefV.class).map(c -> c.iterator().next().getId()).getOptional();
+
         List<T> data = value.at("data").collect(entityType).stream().collect(Collectors.toList());
+
         Page<T> page = new Page(data, before, after);
+
         return page;
     }
 

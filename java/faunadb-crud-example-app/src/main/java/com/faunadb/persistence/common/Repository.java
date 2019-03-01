@@ -1,5 +1,6 @@
 package com.faunadb.persistence.common;
 
+import com.faunadb.model.Post;
 import com.faunadb.model.common.Entity;
 import com.faunadb.model.common.Page;
 import com.faunadb.model.common.PaginationOptions;
@@ -55,11 +56,12 @@ public interface Repository<T extends Entity> {
     CompletableFuture<Optional<T>> find(String id);
 
     /**
-     * It finds all existing Entities within the Repository
+     * It retrieves a {@link Page} of {@link Post} entities
+     * for the given {@link PaginationOptions}.
      *
-     * @return a List of all existing Entities
+     * @param po the {@link PaginationOptions} to determine which {@link Page} of results to return
+     * @return a {@link Page} of Entities
      */
-    // TODO: update JavaDoc
     CompletableFuture<Page<T>> findAll(PaginationOptions po);
 
     /**
