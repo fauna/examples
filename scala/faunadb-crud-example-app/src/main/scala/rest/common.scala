@@ -14,10 +14,10 @@ trait RestEndpoint extends Directives with Json4sJacksonSupport {
 /**
   * Json4sSupport backed by Jackson serialization.
   *
-  * Json4sSupport allows automatic (un)marshalling from/into Json
+  * Json4sSupport allows automatic de/serialization from/into JSON
   * without providing any custom type class in scope.
   *
-  * More info at: https://github.com/hseeberger/akka-http-json
+  * @see [[https://github.com/hseeberger/akka-http-json akka-http-json]]
   */
 trait Json4sJacksonSupport extends Json4sSupport {
   implicit val serialization = native.Serialization

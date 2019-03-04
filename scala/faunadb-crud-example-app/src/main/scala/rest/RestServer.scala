@@ -12,7 +12,9 @@ import faunadb.FaunaClient
 import scala.util.{Failure, Success, Try}
 
 /**
-  * RestServer backed by Akka HTTP. Alla Akka references are encapsulated here.
+  * RestServer backed by Akka HTTP.
+  *
+  * @see [[https://doc.akka.io/docs/akka-http/current/ Akka HTTP]]
   */
 object RestServer {
 
