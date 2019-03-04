@@ -29,9 +29,8 @@ trait Entity {
   * @param after the after cursor – if any, it contains the Id of the next record after the current sequence of data
   * @tparam A the type of data within the sequence
   *
-  * @see [[https://app.fauna.com/documentation/reference/queryapi#page Index]]
-  * @see [[https://app.fauna.com/documentation/reference/queryapi#page Page]]
-  * @see [[https://app.fauna.com/documentation/reference/queryapi#cursor Cursor]]
+  * @see [[https://docs.fauna.com/fauna/current/reference/queryapi/types.html#page Page]]
+  * @see [[https://docs.fauna.com/fauna/current/reference/queryapi/write/createindex Index]]
   */
 case class Page[A](data: Seq[A], before: Option[String], after: Option[String])
 
@@ -40,6 +39,6 @@ case class Page[A](data: Seq[A], before: Option[String], after: Option[String])
   *
   * @param size the max number of elements to return in the requested Page
   * @param before the before cursor – if any, it indicates to return the previous Page of results before this Id (exclusive)
-  * @param after the after cursor –  if any, it indicates to return the next Page of results after this Id (inclusive)
+  * @param after the after cursor – if any, it indicates to return the next Page of results after this Id (inclusive)
   */
 case class PaginationOptions(size: Option[Int], before: Option[String], after: Option[String])

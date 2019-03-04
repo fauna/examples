@@ -5,6 +5,9 @@ import akka.http.scaladsl.server.Route
 import model.{CreateReplacePostData, PaginationOptions}
 import services.PostService
 
+/**
+  * REST endpoint for the [[model.Post Post]] entity.
+  */
 class PostEndpoint(postService: PostService) extends RestEndpoint {
 
   def createPost: Route =
