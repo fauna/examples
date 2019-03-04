@@ -18,9 +18,8 @@ import java.util.Optional;
  * example in order to keep a simple design. Nonetheless, be aware that
  * Fauna's Indexes and Pages can be used to build more complex results</p>
  *
- * @see <a href="https://app.fauna.com/documentation/reference/queryapi#page">Index</a>
- * @see <a href="https://app.fauna.com/documentation/reference/queryapi#page">Page</a>
- * @see <a href="https://app.fauna.com/documentation/reference/queryapi#page">Cursor</a>
+ * @see <a https://docs.fauna.com/fauna/current/reference/queryapi/write/createindex">Index</a>
+ * @see <a href="https://docs.fauna.com/fauna/current/reference/queryapi/types.html#page">Page</a>
  *
  * @param <T> the type of data within the sequence
  */
