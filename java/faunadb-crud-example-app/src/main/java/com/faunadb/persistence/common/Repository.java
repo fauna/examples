@@ -17,6 +17,7 @@ import java.util.concurrent.CompletableFuture;
  * operations for a data model, a Repository interface will resemble
  * the one of a Collection for a domain model.</p>
  *
+ * @param <T> the {@link Entity} type the Repository will be modelled after
  */
 public interface Repository<T extends Entity> {
 

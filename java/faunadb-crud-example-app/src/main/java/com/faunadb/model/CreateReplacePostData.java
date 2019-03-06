@@ -4,7 +4,7 @@ import java.util.List;
 
 /**
  * It contains all the necessary data, with the exception of
- * the Id, for creating or replacing a {@link com.faunadb.model.Post} entity.
+ * the Id, for creating or replacing a {@link Post} entity.
  */
 public class CreateReplacePostData {
 
