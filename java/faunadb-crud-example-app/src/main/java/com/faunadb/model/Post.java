@@ -7,10 +7,10 @@ import com.faunadb.model.common.Entity;
 import java.util.List;
 
 /**
- * A Post entity.
+ * <p>A Post entity.</p>
  *
- * It represents a simple Post, like the one in a Blog,
- * along with some basic attributes.
+ * <p>It represents a simple Post, like the one in a Blog,
+ * along with some basic attributes.</p>
  */
 public class Post extends Entity {
 

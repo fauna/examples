@@ -48,7 +48,7 @@ public abstract class FaunaRepository<T extends Entity> implements Repository<T>
      *
      * @return a unique valid Id
      *
-     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#newid">NewId</a>
+     * @see <a href="https://docs.fauna.com/fauna/current/reference/queryapi/misc/newid">NewId</a>
      */
     @Override
     public CompletableFuture<String> nextId() {
@@ -70,7 +70,7 @@ public abstract class FaunaRepository<T extends Entity> implements Repository<T>
      * @param size the number of unique Ids to return
      * @return a List of unique valid Ids
      *
-     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#newid">NewId</a>
+     * @see <a href="https://docs.fauna.com/fauna/current/reference/queryapi/misc/newid">NewId</a>
      */
     @Override
     public CompletableFuture<List<String>> nextIds(int size) {
@@ -94,10 +94,10 @@ public abstract class FaunaRepository<T extends Entity> implements Repository<T>
 
     /**
      * {@inheritDoc}
-     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#create">Create</a>
-     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#replace">Replace</a>
-     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#if">If</a>
-     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#exists">Exists</a>
+     * @see <a href="https://docs.fauna.com/fauna/current/reference/queryapi/write/create">Create</a>
+     * @see <a href="https://docs.fauna.com/fauna/current/reference/queryapi/write/replace">Replace</a>
+     * @see <a href="https://docs.fauna.com/fauna/current/reference/queryapi/basic/if">If</a>
+     * @see <a href="https://docs.fauna.com/fauna/current/reference/queryapi/logical/exists">Exists</a>
      */
     @Override
     public CompletableFuture<T> save(T entity) {
@@ -112,11 +112,11 @@ public abstract class FaunaRepository<T extends Entity> implements Repository<T>
 
     /**
      * {@inheritDoc}
-     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#create">Create</a>
-     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#replace">Replace</a>
-     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#if">If</a>
-     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#exists">Exists</a>
-     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#map">Map</a>
+     * @see <a href="https://docs.fauna.com/fauna/current/reference/queryapi/write/create">Create</a>
+     * @see <a href="https://docs.fauna.com/fauna/current/reference/queryapi/write/replace">Replace</a>
+     * @see <a href="https://docs.fauna.com/fauna/current/reference/queryapi/basic/if">If</a>
+     * @see <a href="https://docs.fauna.com/fauna/current/reference/queryapi/logical/exists">Exists</a>
+     * @see <a href="https://docs.fauna.com/fauna/current/reference/queryapi/collection/map">Map</a>
      */
     @Override
     public CompletableFuture<List<T>> saveAll(List<T> entities) {
@@ -138,7 +138,7 @@ public abstract class FaunaRepository<T extends Entity> implements Repository<T>
 
     /**
      * {@inheritDoc}
-     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#delete">Delete</a>
+     * @see <a href="https://docs.fauna.com/fauna/current/reference/queryapi/write/delete">Delete</a>
      */
     @Override
     public CompletableFuture<Optional<T>> remove(String id) {
@@ -158,7 +158,7 @@ public abstract class FaunaRepository<T extends Entity> implements Repository<T>
 
     /**
      * {@inheritDoc}
-     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#get">Get</a>
+     * @see <a href="https://docs.fauna.com/fauna/current/reference/queryapi/read/get">Get</a>
      */
     @Override
     public CompletableFuture<Optional<T>> find(String id) {
@@ -178,8 +178,8 @@ public abstract class FaunaRepository<T extends Entity> implements Repository<T>
 
     /**
      * {@inheritDoc}
-     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#paginate">Paginate</a>
-     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#map">Map</a>
+     * @see <a href="https://docs.fauna.com/fauna/current/reference/queryapi/read/paginate">Paginate</a>
+     * @see <a href="https://docs.fauna.com/fauna/current/reference/queryapi/collection/map">Map</a>
      */
     @Override
     public CompletableFuture<List<T>> findAll() {
@@ -207,10 +207,10 @@ public abstract class FaunaRepository<T extends Entity> implements Repository<T>
      *
      * @return a query for performing a valid {@link Repository#save} operation
      *
-     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#create">Create</a>
-     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#replace">Replace</a>
-     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#if">If</a>
-     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#exists">Exists</a>
+     * @see <a href="https://docs.fauna.com/fauna/current/reference/queryapi/write/create">Create</a>
+     * @see <a href="https://docs.fauna.com/fauna/current/reference/queryapi/write/replace">Replace</a>
+     * @see <a href="https://docs.fauna.com/fauna/current/reference/queryapi/basic/if">If</a>
+     * @see <a href="https://docs.fauna.com/fauna/current/reference/queryapi/logical/exists">Exists</a>
      */
     protected Expr saveQuery(Expr id, Expr data) {
         Expr query =
@@ -242,7 +242,7 @@ public abstract class FaunaRepository<T extends Entity> implements Repository<T>
     }
 
     /**
-     * <p>It converts a FaunaDB {@link Value} into a List of {@link Entity}.</p>
+     * <p>It converts a FaunaDB {@link Value} into a {@link List} with {@link Entity} type.</p>
      *
      * <p>In order this to work, the concrete Entity class to be converted
      * must include Fauna's encoding annotations. At the same time, the
@@ -252,7 +252,7 @@ public abstract class FaunaRepository<T extends Entity> implements Repository<T>
      * @return the converted Entity from the given Value
      *
      * @see <a href="https://github.com/fauna/faunadb-jvm/blob/master/docs/java.md#how-to-work-with-user-defined-classes">Encoding and decoding user defined classes</a>
-     * @see <a href="https://app.fauna.com/documentation/reference/queryapi#array">Array</a>
+     * @see <a href="https://docs.fauna.com/fauna/current/reference/queryapi/types.html#array">Array</a>
      *
      */
     protected List<T> toList(Value value) {

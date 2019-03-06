@@ -393,11 +393,11 @@ Select(
 ```
 
 #### References:
-* [Create](https://app.fauna.com/documentation/reference/queryapi#create)
-* [Replace](https://app.fauna.com/documentation/reference/queryapi#replace)
-* [Select](https://app.fauna.com/documentation/reference/queryapi#select)
-* [If](https://app.fauna.com/documentation/reference/queryapi#if)
-* [Exists](https://app.fauna.com/documentation/reference/queryapi#exists)
+* [Create](https://docs.fauna.com/fauna/current/reference/queryapi/write/create)
+* [Replace](https://docs.fauna.com/fauna/current/reference/queryapi/write/replace)
+* [Select](https://docs.fauna.com/fauna/current/reference/queryapi/read/select)
+* [If](https://docs.fauna.com/fauna/current/reference/queryapi/basic/if)
+* [Exists](https://docs.fauna.com/fauna/current/reference/queryapi/logical/exists)
 
 ### Save several Posts
 It saves several Posts within a single transaction. It uses the `Map` function to iterate over a collection of entities and apply the above save query to them.
@@ -406,27 +406,27 @@ It saves several Posts within a single transaction. It uses the `Map` function t
 Map(
   Arr(Obj("data", Obj("title", Value("My cat and other marvels")))),
   Lambda(
-    Value("nextEntity"), 
+    Value("nextEntity"),
     //-- Save Query goes here
   )
 ```
 
 #### References:
-* [Map](https://app.fauna.com/documentation/reference/queryapi#map)
-* [Lambda](https://app.fauna.com/documentation/reference/queryapi#lambda)
+* [Map](https://docs.fauna.com/fauna/current/reference/queryapi/collection/map)
+* [Lambda](https://docs.fauna.com/fauna/current/reference/queryapi/basic/lambda)
 
 ### Find a Post
 It looks up a Post by its Id and returns its data back. 
 
 ```java
 Select(
-  Value("data"), 
+  Value("data"),
   Get(Ref(Class("posts"), "1520225686617873"))
 )
 ```
 #### References:
-* [Select](https://app.fauna.com/documentation/reference/queryapi#select)
-* [Get](https://app.fauna.com/documentation/reference/queryapi#get)
+* [Select](https://docs.fauna.com/fauna/current/reference/queryapi/read/select)
+* [Get](https://docs.fauna.com/fauna/current/reference/queryapi/read/get)
 
 
 ### Find all Posts
@@ -443,12 +443,12 @@ SelectAll(
 ```
 
 #### References:
-* [Paginate](https://app.fauna.com/documentation/reference/queryapi#paginate)
-* [Match](https://app.fauna.com/documentation/reference/queryapi#matchindexref-terms)
-* [SelectAll](https://app.fauna.com/documentation/reference/queryapi#selectall)
-* [Map](https://app.fauna.com/documentation/reference/queryapi#map)
-* [Lambda](https://app.fauna.com/documentation/reference/queryapi#lambda)
-* [Get](https://app.fauna.com/documentation/reference/queryapi#get)
+* [Paginate](https://docs.fauna.com/fauna/current/reference/queryapi/read/paginate)
+* [Match](https://docs.fauna.com/fauna/current/reference/queryapi/set/match)
+* [SelectAll](https://docs.fauna.com/fauna/current/reference/queryapi/read/selectall)
+* [Map](https://docs.fauna.com/fauna/current/reference/queryapi/collection/map)
+* [Lambda](https://docs.fauna.com/fauna/current/reference/queryapi/basic/lambda)
+* [Get](https://docs.fauna.com/fauna/current/reference/queryapi/read/get)
 
 ### Find Posts by Title
 It looks up all Posts matching the given Title and returns its data. The search is done using a previsouly created `Index`.  First, all Posts Ids are found using the `Index` together with the `Paginate` function and then its data is looked up through the `Get` function.
@@ -464,12 +464,12 @@ SelectAll(
 ```
 
 #### References:
-* [Paginate](https://app.fauna.com/documentation/reference/queryapi#paginate)
-* [Match](https://app.fauna.com/documentation/reference/queryapi#matchindexref-terms)
-* [SelectAll](https://app.fauna.com/documentation/reference/queryapi#selectall)
-* [Map](https://app.fauna.com/documentation/reference/queryapi#map)
-* [Lambda](https://app.fauna.com/documentation/reference/queryapi#lambda)
-* [Get](https://app.fauna.com/documentation/reference/queryapi#get)
+* [Paginate](https://docs.fauna.com/fauna/current/reference/queryapi/read/paginate)
+* [Match](https://docs.fauna.com/fauna/current/reference/queryapi/set/match)
+* [SelectAll](https://docs.fauna.com/fauna/current/reference/queryapi/read/selectall)
+* [Map](https://docs.fauna.com/fauna/current/reference/queryapi/collection/map)
+* [Lambda](https://docs.fauna.com/fauna/current/reference/queryapi/basic/lambda)
+* [Get](https://docs.fauna.com/fauna/current/reference/queryapi/read/get)
 
 
 ### Remove a Post
@@ -483,5 +483,5 @@ Select(
 ```
 
 #### References:
-* [Delete](https://app.fauna.com/documentation/reference/queryapi#delete)
-* [Select](https://app.fauna.com/documentation/reference/queryapi#select)
+* [Delete](https://docs.fauna.com/fauna/current/reference/queryapi/write/delete)
+* [Select](https://docs.fauna.com/fauna/current/reference/queryapi/read/select)
