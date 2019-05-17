@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.faunadb.model.CreateReplacePostData;
 import com.faunadb.model.Post;
+import com.faunadb.model.common.Page;
+import com.faunadb.model.common.PaginationOptions;
 import com.faunadb.services.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -38,7 +41,7 @@ public class PostController {
             CreateReplacePostData data = deserializeCreateReplacePostData(requestBody);
             CompletableFuture<ResponseEntity> result =
                 postService.createPost(data)
-                    .thenApply(post -> new ResponseEntity(post, HttpStatus.OK));
+                    .thenApply(post -> new ResponseEntity(post, HttpStatus.CREATED));
             return result;
         }
 
@@ -47,7 +50,7 @@ public class PostController {
             List<CreateReplacePostData> data = deserializeCreateReplacePostDataList(requestBody);
             CompletableFuture<ResponseEntity> result =
                 postService.createSeveralPosts(data)
-                    .thenApply(post -> new ResponseEntity(post, HttpStatus.OK));
+                    .thenApply(post -> new ResponseEntity(post, HttpStatus.CREATED));
             return result;
         }
 
@@ -67,14 +70,23 @@ public class PostController {
     }
 
     @GetMapping("/posts")
-    public CompletableFuture<List<Post>> retrievePosts() {
-        CompletableFuture<List<Post>> result = postService.retrievePosts();
+    public CompletableFuture<Page<Post>> retrievePosts(
+            @RequestParam("size") Optional<Integer> size,
+            @RequestParam("before") Optional<String> before,
+            @RequestParam("after") Optional<String> after) {
+        PaginationOptions po = new PaginationOptions(size, before, after);
+        CompletableFuture<Page<Post>> result = postService.retrievePosts(po);
         return result;
     }
 
     @GetMapping(value = "/posts", params = {"title"})
-    public CompletableFuture<List<Post>> retrievePostsByTitle(@RequestParam("title") String title) {
-        CompletableFuture<List<Post>> result = postService.retrievePostsByTitle(title);
+    public CompletableFuture<Page<Post>> retrievePostsByTitle(
+            @RequestParam("title") String title,
+            @RequestParam("size") Optional<Integer> size,
+            @RequestParam("before") Optional<String> before,
+            @RequestParam("after") Optional<String> after) {
+        PaginationOptions po = new PaginationOptions(size, before, after);
+        CompletableFuture<Page<Post>> result = postService.retrievePostsByTitle(title, po);
         return result;
     }
 
@@ -85,7 +97,8 @@ public class PostController {
                 .thenApply(optionalPost ->
                     optionalPost
                         .map(post -> new ResponseEntity(post, HttpStatus.OK))
-                        .orElseGet(() -> new ResponseEntity(HttpStatus.NOT_FOUND))
+                        .orElseGet(() -> new ResponseEntity(HttpStatus.NOT_FOUND)
+                    )
                 );
         return result;
     }
@@ -97,8 +110,9 @@ public class PostController {
                 .thenApply(optionalPost ->
                     optionalPost
                         .map(post -> new ResponseEntity(post, HttpStatus.OK))
-                        .orElseGet(() -> new ResponseEntity(HttpStatus.NOT_FOUND))
-                    );
+                        .orElseGet(() -> new ResponseEntity(HttpStatus.NOT_FOUND)
+                    )
+                );
         return result;
     }
 

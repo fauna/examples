@@ -2,6 +2,8 @@ package com.faunadb.services;
 
 import com.faunadb.model.CreateReplacePostData;
 import com.faunadb.model.Post;
+import com.faunadb.model.common.Page;
+import com.faunadb.model.common.PaginationOptions;
 import com.faunadb.persistence.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -72,19 +74,26 @@ public class PostService {
     }
 
     /**
-     * It retrieves a list of all {@link Post} entities from the repository.
-     * @return a list of all {@link Post} entities
+     * It retrieves a {@link Page} of {@link Post} entities from
+     * the repository for the given {@link PaginationOptions}.
+     *
+     * @param po the {@link PaginationOptions} to determine which {@link Page} of results to return
+     * @return a {@link Page} of Entities
      */
-    public CompletableFuture<List<Post>> retrievePosts() {
-        return postRepository.findAll();
+    public CompletableFuture<Page<Post>> retrievePosts(PaginationOptions po) {
+        return postRepository.findAll(po);
     }
 
     /**
-     * It retrieves a list of all {@link Post} entities from the repository.
-     * @return a list of all {@link Post} entities
+     * It retrieves a {@link Page} of {@link Post} entities
+     * from the repository matching the given title.
+     *
+     * @param title title to find Posts by
+     * @param po the {@link PaginationOptions} to determine which {@link Page} of results to return
+     * @return a {@link Page} of {@link Post} entities
      */
-    public CompletableFuture<List<Post>> retrievePostsByTitle(String title) {
-        return postRepository.findByTitle(title);
+    public CompletableFuture<Page<Post>> retrievePostsByTitle(String title, PaginationOptions po){
+        return postRepository.findByTitle(title, po);
     }
 
     /**

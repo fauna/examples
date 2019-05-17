@@ -3,8 +3,11 @@ package com.faunadb.persistence.common;
 import com.faunadb.client.FaunaClient;
 import com.faunadb.client.errors.NotFoundException;
 import com.faunadb.client.query.Expr;
+import com.faunadb.client.query.Pagination;
 import com.faunadb.client.types.Value;
 import com.faunadb.model.common.Entity;
+import com.faunadb.model.common.Page;
+import com.faunadb.model.common.PaginationOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.Class;
@@ -182,18 +185,19 @@ public abstract class FaunaRepository<T extends Entity> implements Repository<T>
      * @see <a href="https://docs.fauna.com/fauna/current/reference/queryapi/collection/map">Map</a>
      */
     @Override
-    public CompletableFuture<List<T>> findAll() {
-        CompletableFuture<List<T>> result =
+    public CompletableFuture<Page<T>> findAll(PaginationOptions po) {
+        Pagination paginationQuery = Paginate(Match(Index(Value(classIndexName))));
+        po.getSize().ifPresent(size -> paginationQuery.size(size));
+        po.getAfter().ifPresent(after -> paginationQuery.after(Ref(Class(className), Value(after))));
+        po.getBefore().ifPresent(before -> paginationQuery.before(Ref(Class(className), Value(before))));
+
+        CompletableFuture<Page<T>> result =
             client.query(
-                SelectAll(
-                    Value("data"),
-                    Map(
-                        Paginate(Match(Index(Value(classIndexName)))),
-                        Lambda(Value("nextRef"), Select(Value("data"), Get(Var("nextRef"))))
-                    )
+                Map(
+                    paginationQuery,
+                    Lambda(Value("nextRef"), Select(Value("data"), Get(Var("nextRef"))))
                 )
-            )
-            .thenApply(this::toList);
+            ).thenApply(this::toPage);
 
         return result;
     }
@@ -257,6 +261,39 @@ public abstract class FaunaRepository<T extends Entity> implements Repository<T>
      */
     protected List<T> toList(Value value) {
         return value.asCollectionOf(entityType).get().stream().collect(Collectors.toList());
+    }
+
+    /**
+     * <p>It converts a FaunaDB {@link Value} into a {@link Page} with {@link Entity} type.</p>
+     *
+     * <p>In order this to work, the concrete Entity class to be converted
+     * must include Fauna's encoding annotations. At the same time, the
+     * Value to convert from must be of a Fauna Page type.</p>
+     *
+     * @param value the Value to convert from
+     * @return the converted Entity from the given Value
+     *
+     * @see <a href="https://github.com/fauna/faunadb-jvm/blob/master/docs/java.md#how-to-work-with-user-defined-classes">Encoding and decoding user defined classes</a>
+     * @see <a href="https://docs.fauna.com/fauna/current/reference/queryapi/types.html#page">Page</a>
+     *
+     */
+    protected Page<T> toPage(Value value) {
+        /*
+         * Note that below code for extracting the data within the "after"
+         * and the "before" cursors directly depends on the definition of
+         * the Index from which the Page is being derived. For this particular
+         * case, the Index return values should only contain the Ref field
+         * from the Instances being covered by the Index. If the Index return
+         * values should contain more fields, update below code accordingly.
+         */
+        Optional<String> after = value.at("after").asCollectionOf(Value.RefV.class).map(c -> c.iterator().next().getId()).getOptional();
+        Optional<String> before = value.at("before").asCollectionOf(Value.RefV.class).map(c -> c.iterator().next().getId()).getOptional();
+
+        List<T> data = value.at("data").collect(entityType).stream().collect(Collectors.toList());
+
+        Page<T> page = new Page(data, before, after);
+
+        return page;
     }
 
     /**
