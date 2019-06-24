@@ -8,6 +8,8 @@ __Table of Contents__
   * [CRUD REST Service](java/faunadb-crud-example-app)
 * [Scala](#scala)
   * [CRUD REST Service](scala/faunadb-crud-example-app)
+* [Kubernetes](#kubernetes)
+  * [FaunaDB kubernetes deployment example](kubernetes/)
 
 ## Java
 #### [CRUD REST Service](java/faunadb-crud-example-app)
@@ -20,3 +22,9 @@ A full working application exposing a REST API for a set of CRUD operations arou
 A full working application exposing a REST API for a set of CRUD operations around one example entity.
 
 [Go to the code](scala/faunadb-crud-example-app)
+
+## Kubernetes
+#### [FaunaDB kubernetes deployment example](kubernetes/)
+A statefulset configuration example to deploy FaunaDB with kubernetes.
+
+[Go to the code](kubernetes/)
