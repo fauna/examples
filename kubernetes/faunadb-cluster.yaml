@@ -1,0 +1,191 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: faunadb-cluster
+  labels:
+    app: faunadb-cluster
+spec:
+  ports:
+  - port: 8443
+    name: web
+  clusterIP: None
+  selector:
+    app: faunadb-cluster
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: faunadb-lb
+  labels:
+    app: faunadb-cluster
+spec:
+  ports:
+  - port: 8443
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    app: faunadb-cluster
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: faunadb-shell
+  labels:
+    app: faunadb-shell
+spec:
+  containers:
+    - name: faunadb-shell
+      image: node:8-jessie
+      imagePullPolicy: IfNotPresent
+      readinessProbe:
+        initialDelaySeconds: 15
+        periodSeconds: 1
+        exec:
+          command:
+          - bash
+          - -c
+          - while [ ! -f ~/.fauna-shell ] ; do sleep 1; done
+      command:
+        - /bin/sh
+        - -ec
+        - |
+          npm install -g fauna-shell
+          touch ~/.fauna-shell
+          echo default=endpoint >> ~/.fauna-shell
+          echo >> ~/.fauna-shell
+          echo [endpoint] >> ~/.fauna-shell
+          echo domain=faunadb-lb >> ~/.fauna-shell
+          echo port=8443 >> ~/.fauna-shell
+          echo scheme=http >> ~/.fauna-shell
+          echo secret=secret >> ~/.fauna-shell
+        
+          while sleep 1 ; do echo -n . ; done
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: faunadb-cluster
+spec:
+  serviceName: "faunadb-cluster"
+  # This is the default behavior: the next replica will start only the previous 
+  # one is ready. This is necessary due the lifecycle/postStart commands
+  podManagementPolicy: "OrderedReady"
+  updateStrategy:
+    # This is the default behavior: if we patch the config, we'll need to 
+    # delete the node to force the re-creation to fetch the new configs
+    type: "OnDelete"
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: faunadb-cluster
+    spec:
+      containers:
+      - name: faunadb-cluster
+        image: fauna/faunadb:2.6.3
+        imagePullPolicy: IfNotPresent
+        command:
+        - bash
+        - -cex
+        - |
+            export K8S_START_FILE_DIR="$SHARED_DIR/k8s-started"
+
+            wait_db() {
+              while ! curl --connect-timeout 1 --fail --silent "http://localhost:8443/ping" > /dev/null; do
+                sleep 5
+              done
+            }
+
+            post_start_hook() {
+              sleep 3s
+              
+              if [[ ! -z $HOSTNAME && ! -z $FIRST_POD_NAME && $FIRST_POD_NAME != $HOSTNAME ]] 
+              then 
+                wait_db
+
+                if test -f $K8S_START_FILE_DIR
+                then
+                  faunadb-admin update-replica data+log $HOSTNAME
+                else
+                  REPLICAS=()
+                  TOTAL_REPLICAS=${HOSTNAME##*-}
+                  for n in $(seq 0 $TOTAL_REPLICAS); do REPLICAS+=(faunadb-cluster-$n) ; done
+
+                  echo * PostStart from $HOSTNAME $(date) : Will run update-replication for ${REPLICAS[*]}
+                  faunadb-admin update-replication ${REPLICAS[*]}
+                fi
+              fi
+
+              echo * PostStart from $HOSTNAME $(date) | tee -a $K8S_START_FILE_DIR
+            }
+
+            # only on faunadb >= 2.6.3
+            DB_ARGS=("--replica_name" "$HOSTNAME")
+
+            if [ "$HOSTNAME" == "$FIRST_POD_NAME" ]
+            then
+              DB_ARGS+=("--init")
+            else
+              DB_ARGS+=("--join" "faunadb-cluster")
+            fi
+
+            echo * EntryPointCommand from $HOSTNAME $(date), exec args: {DB_ARGS[*]}
+
+            post_start_hook &
+
+            exec /usr/local/bin/faunadb ${DB_ARGS[*]}
+        ports:
+        - containerPort: 8443
+          name: http
+        volumeMounts:
+        - name: datadir
+          mountPath: /var/lib/faunadb
+        lifecycle:
+          preStop:
+            exec:
+              command: 
+                - "/bin/bash"
+                - "-cx"
+                - "faunadb-admin update-replica compute $HOSTNAME"
+        resources:
+          requests:
+            memory: 1G
+          # limits:
+          #   memory: 3G
+        env:
+        - name: FIRST_POD_NAME
+          value: faunadb-cluster-0
+        - name: SHARED_DIR
+          value: "/var/lib/faunadb"
+        readinessProbe:
+          httpGet:
+            path: /ping
+            port: 8443
+            scheme: HTTP
+          initialDelaySeconds: 10 # 60 how long to wait before checking
+          periodSeconds: 10 # how long to wait between checks
+          successThreshold: 1 # how many successes to hit before accepting
+          failureThreshold: 1 # how many failures to accept before failing
+          timeoutSeconds: 30 # how long to wait for a response
+      # No pre-stop hook is required, a SIGTERM plus some time is all that's
+      # needed for graceful shutdown of a node.
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: datadir
+        persistentVolumeClaim:
+          claimName: datadir
+  volumeClaimTemplates:
+  - metadata:
+      name: datadir
+      labels:
+        app: faunadb-cluster
+        demo: yeap
+      # annotations:
+      #   volume.alpha.kubernetes.io/storage-class: anything
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "standard"
+      resources:
+        requests:
+          storage: 10Gi
