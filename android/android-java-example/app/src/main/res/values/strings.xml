@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">My FaunaDB Application</string>
+    <string name="fetching_msg">Fetching data from: %1$s, please wait...</string>
+    <string name="fauna_endpoint">https://db.fauna.com/</string>
+    <string name="fauna_secret">PUT_YOUR_SECRET_HERE</string>
+</resources>
