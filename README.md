@@ -10,6 +10,7 @@ __Table of Contents__
   * [CRUD REST Service](scala/faunadb-crud-example-app)
 * [Python](#python)
   * [CRUD REST Service](python/faunadb-crud-example-app)
+  * [IoT Read/Write](python/iot)
 
 ## Java
 #### [CRUD REST Service](java/faunadb-crud-example-app)
@@ -28,3 +29,9 @@ A full working application exposing a REST API for a set of CRUD operations arou
 A full working application exposing a REST API for a set of CRUD operations around one example entity.
 
 [Go to the code](python/faunadb-crud-example-app)
+
+## IoT
+#### [IoT Read/Write](python/iot)
+A basic example to read data from a temperature/humidity sensor, store the data in Fauna, then retrieve it.
+
+[Go to the code](python/iot)
