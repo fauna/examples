@@ -1,0 +1,14 @@
+CreateClass({ name: "posts" });
+CreateIndex(
+  {
+    name: "all_posts",
+    source: Class("posts")
+  }
+);
+CreateIndex(
+  {
+    name: "posts_by_title",
+    source: Class("posts"),
+    terms: [{ field: ["data", "title"] }]
+  }
+);
