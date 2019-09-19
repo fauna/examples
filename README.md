@@ -21,7 +21,7 @@ A full working application exposing a REST API for a set of CRUD operations arou
 
 ## JavaScript
 #### [Fauna Market](https://github.com/fauna/fauna-market)
-A full working application demonstrating global consistency with a emoji marketplace.
+A full working application demonstrating global consistency with an emoji marketplace.
 
 [Go to the code](https://github.com/fauna/fauna-market)
 
