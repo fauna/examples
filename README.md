@@ -6,6 +6,8 @@ __Table of Contents__
 
 * [Java](#java)
   * [CRUD REST Service](java/faunadb-crud-example-app)
+* [JavaScript](#javascript)
+  * [Fauna Market](https://github.com/fauna/fauna-market)
 * [Scala](#scala)
   * [CRUD REST Service](scala/faunadb-crud-example-app)
 * [Python](#python)
@@ -16,6 +18,12 @@ __Table of Contents__
 A full working application exposing a REST API for a set of CRUD operations around one example entity. 
 
 [Go to the code](java/faunadb-crud-example-app)
+
+## JavaScript
+#### [Fauna Market](https://github.com/fauna/fauna-market)
+A full working application demonstrating global consistency with a emoji marketplace.
+
+[Go to the code](https://github.com/fauna/fauna-market)
 
 ## Scala
 #### [CRUD REST Service](scala/faunadb-crud-example-app)
