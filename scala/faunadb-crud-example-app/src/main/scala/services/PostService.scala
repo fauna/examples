@@ -77,7 +77,6 @@ class PostService(repository: PostRepository) extends Service {
   def retrievePosts()(implicit po: PaginationOptions): Future[Page[Post]] =
     repository.findAll()
 
-
   /**
     * It retrieves a [[model.Page Page]] of [[model.Post Post]]
     * entities from the repository matching the given title.

@@ -3,8 +3,8 @@ package persistence
 import com.typesafe.config.Config
 import faunadb.FaunaClient
 import faunadb.errors.NotFoundException
-import faunadb.query.{Class, Obj, _}
-import faunadb.values.{Decoder, _}
+import faunadb.query._
+import faunadb.values._
 import model.{Entity, Page, PaginationOptions}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -26,8 +26,7 @@ trait FaunaRepository[A <: Entity] extends Repository[A] with FaunaRepository.Im
 
   protected val client: FaunaClient
 
-  protected val className: String
-  protected val classIndexName: String
+  protected val collectionName: String
 
   implicit protected val codec: Codec[A]
 
@@ -119,7 +118,7 @@ trait FaunaRepository[A <: Entity] extends Repository[A] with FaunaRepository.Im
     val result = client.query(
       Select(
         "data",
-        Delete(Ref(Class(className), id))
+        Delete(Ref(Collection(collectionName), id))
       )
     )
 
@@ -133,7 +132,7 @@ trait FaunaRepository[A <: Entity] extends Repository[A] with FaunaRepository.Im
     */
   override def find(id: String): Future[Option[A]] = {
     val result = client.query(
-      Select("data", Get(Ref(Class(className), id)))
+      Select("data", Get(Ref(Collection(collectionName), id)))
     )
 
     result.optDecode[A]
@@ -146,13 +145,13 @@ trait FaunaRepository[A <: Entity] extends Repository[A] with FaunaRepository.Im
     * @see [[https://docs.fauna.com/fauna/current/reference/queryapi/collection/map Map]]
     */
   def findAll()(implicit po: PaginationOptions): Future[Page[A]] = {
-    val beforeCursor = po.before.map(id => Before(Ref(Class(className), id)))
-    val afterCursor = po.after.map(id => After(Ref(Class(className), id)))
+    val beforeCursor = po.before.map(id => Before(Ref(Collection(collectionName), id)))
+    val afterCursor = po.after.map(id => After(Ref(Collection(collectionName), id)))
     val cursor = beforeCursor.orElse(afterCursor).getOrElse(NoCursor)
 
     val result = client.query(
       Map(
-        Paginate(Match(Index(classIndexName)), size = po.size, cursor = cursor),
+        Paginate(Documents(Collection(collectionName)), size = po.size, cursor = cursor),
         Lambda(nextRef => Select("data", Get(nextRef)))
       )
     )
@@ -177,9 +176,9 @@ trait FaunaRepository[A <: Entity] extends Repository[A] with FaunaRepository.Im
     Select(
       "data",
       If(
-        Exists(Ref(Class(className), id)),
-        Replace(Ref(Class(className), id), Obj("data" -> data)),
-        Create(Ref(Class(className), id), Obj("data" -> data))
+        Exists(Ref(Collection(collectionName), id)),
+        Replace(Ref(Collection(collectionName), id), Obj("data" -> data)),
+        Create(Ref(Collection(collectionName), id), Obj("data" -> data))
       )
     )
 

@@ -11,7 +11,7 @@ __Table of Contents__
   * [Create several Posts](#create-several-posts)
   * [Retrieve a Post](#retrieve-a-post)
   * [Retrieve Posts](#retrieve-posts)
-  * [Retrieve Posts by Tags](#retrieve-posts-by-tags)
+  * [Retrieve Posts by Title](#retrieve-posts-by-title)
   * [Replace a Post](#replace-a-post)
   * [Delete a Post](#delete-a-post)
 * [FQL Reference](#fql-reference)
@@ -65,16 +65,7 @@ The next step will be to create the database. Issue the following command for cr
 $ fauna create-database demo-app
 ```
 
-
-### 4. Set up Schema
-
-Run below command for creating the DB schema. It will execute all required queries from a file.
-
-```
-$ fauna run-queries demo-app --file=./scripts/create_schema.fql
-```
-
-### 5. Obtain an API Key
+### 4. Obtain an API Key
 Next, issue an API Key for connecting to the new created DB from the service. Execute below command for doing so:
 
 ```
@@ -84,6 +75,15 @@ $ fauna create-key demo-app server
 Make sure to write down the given secret key. It will be used for starting up the service later on.
 
 > Alternatively, you can also create an API Key from the Cloud Dashboard [here](https://dashboard.fauna.com/db/demo-app/keys).
+
+
+### 5. Set up Schema
+
+Run below command for creating the DB schema. It will execute all required queries from a file.
+
+```
+$ fauna eval demo-app --file=./scripts/create_schema.fql --secret=YOUR_FAUNADB_SERVER_SECRET
+```
 
 ## Running the app
 
@@ -402,13 +402,13 @@ It creates a new a Post for the given Id with the provided data. If a Post alrea
 Select(
   "data",
   If(
-    Exists(Ref(Class("posts"), "1520225686617873")),
+    Exists(Ref(Collection("posts"), "1520225686617873")),
     Replace(
-      Ref(Class("posts"), "1520225686617873"),
+      Ref(Collection("posts"), "1520225686617873"),
       Obj("data" -> Obj("title" -> "My cat and other marvels"))
     ),
     Create(
-      Ref(Class("posts"), "1520225686617873"),
+      Ref(Collection("posts"), "1520225686617873"),
       Obj("data" -> Obj("title" -> "My cat and other marvels"))
     )
   )
@@ -443,7 +443,7 @@ It looks up a Post by its Id and returns its data back.
 ```scala
 Select(
   "data",
-  Get(Ref(Class("posts"), "1520225686617873"))
+  Get(Ref(Collection`("posts"), "1520225686617873"))
 )
 ```
 #### References:
@@ -452,11 +452,11 @@ Select(
 
 
 ### Find all Posts
-It looks up all Posts in the class and returns its data back. First, all Posts Ids are found using the class `Index` together with the `Paginate` function and then its data is looked up through the `Get` function.
+It looks up all Posts in the collection and returns its data back. First, all Posts Ids are found using the default collection `Index` together with the `Paginate` function and then its data is looked up through the `Get` function.
 
 ```scala
 Map(
-  Paginate(Match(Index("all_posts"))),
+  Paginate(Documents(Collection("all_posts"))),
   Lambda( nextRef =>
     Select("data", Get(nextRef))
   )
@@ -472,7 +472,7 @@ Map(
 * [Get](https://docs.fauna.com/fauna/current/reference/queryapi/read/get)
 
 ### Find Posts by Title
-It looks up all Posts matching the given Title and returns its data. The search is done using a previsouly created `Index`.  First, all Posts Ids are found using the `Index` together with the `Paginate` function and then its data is looked up through the `Get` function.
+It looks up all Posts matching the given Title and returns its data. The search is done using a previously created `Index`.  First, all Posts Ids are found using the `Index` together with the `Paginate` function and then its data is looked up through the `Get` function.
 
 ```scala
 Map(
@@ -498,7 +498,7 @@ It removes the Post for the given Id if any and returns its data.
 ```scala
 Select(
   "data",
-  Delete(Ref(Class("posts"), "1520225686617873"))
+  Delete(Ref(Collection("posts"), "1520225686617873"))
 )
 ```
 

@@ -1,14 +1,8 @@
-CreateClass({ name: "posts" });
-CreateIndex(
-  {
-    name: "all_posts",
-    source: Class("posts")
-  }
-);
+CreateCollection({ name: "posts" });
 CreateIndex(
   {
     name: "posts_by_title",
-    source: Class("posts"),
+    source: Collection("posts"),
     terms: [{ field: ["data", "title"] }]
   }
 );
